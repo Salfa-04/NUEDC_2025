@@ -1,0 +1,49 @@
+[workspace]
+resolver = "3"
+
+package.version = "0.0.0"
+package.edition = "2024"
+package.publish = false
+package.authors = ["Salfa <me@salfa.cc>"]
+
+members         = ["*"]
+exclude         = [".cargo", ".git", "target", "example"]
+default-members = []
+
+
+[workspace.dependencies.embassy-stm32]
+version = "0.2"
+### Only chips of the same model can be used at the same time
+features = ["defmt", "time-driver-any", "<CHIP>"]
+
+
+[profile]
+release.lto   = true
+release.strip = "debuginfo"
+
+
+[workspace.dependencies]
+
+defmt-rtt    = { version = "1.0", features = ["disable-blocking-mode"] }
+defmt        = { version = "1.0", features = ["encoding-rzcobs", "ip_in_core"] }
+panic-probe  = { version = "1.0", features = ["print-defmt"] }
+cortex-m-rt  = { version = "0.7", features = ["device", "zero-init-ram"] }
+embassy-time = { version = "0.4", features = ["defmt", "tick-hz-32_768"] }
+embassy-sync = { version = "0.7", features = ["defmt"] }
+
+
+[workspace.dependencies.cortex-m]
+version  = "0.7"
+features = ["critical-section-single-core", "linker-plugin-lto"]
+[workspace.dependencies.embassy-executor]
+version  = "0.7"
+features = ["arch-cortex-m", "executor-thread", "executor-interrupt", "defmt"]
+
+
+[profile.dev.package]
+cortex-m.opt-level         = 3
+cortex-m-rt.opt-level      = 3
+embassy-executor.opt-level = 3
+embassy-time.opt-level     = 3
+embassy-stm32.opt-level    = 3
+defmt.opt-level            = 3
