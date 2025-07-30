@@ -13,7 +13,7 @@ async fn entry(s: embassy_executor::Spawner) {
 
     {
         use hal::gpio::Pin;
-        let p = (p.IWDG, p.PC13.degrade(),);
+        let p = (p.IWDG, p.PC7.degrade());
         s.must_spawn(tasks::blinky::task(p));
     }
 
