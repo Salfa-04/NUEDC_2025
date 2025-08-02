@@ -19,6 +19,9 @@ path = "helper/mod.rs"
 
 [dependencies]
 
+pid  = "4.0"
+crsf = "2.0"
+
 embedded-io-async = "0.6"
 
 
