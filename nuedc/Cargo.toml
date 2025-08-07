@@ -22,6 +22,9 @@ path = "helper/mod.rs"
 pid  = "4.0"
 crsf = "2.0"
 
+micromath = "2.1"
+libm      = "0.2"
+
 embedded-io-async = "0.6"
 
 

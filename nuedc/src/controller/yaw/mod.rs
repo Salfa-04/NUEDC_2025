@@ -43,7 +43,10 @@ pub async fn update(pid: &mut Pid<f32>, setpoint: Option<f32>) {
     let op: _ = pid.next_control_output(yaw);
 
     // defmt::info!("OP: {}", defmt::Debug2Format(&op));
+    // let debug = (op.p, op.i, op.output);
+    // defmt::info!("{} => {}", yaw, debug);
 
+    // Safety: Yaw pid is limited to 1200(u16).
     let speed = op.output as i16;
     let s_last = option_output(Some(speed));
 
@@ -53,6 +56,8 @@ pub async fn update(pid: &mut Pid<f32>, setpoint: Option<f32>) {
 
     let acc = (256. - 20. * cycle / delta_v) as u8;
     let acc = if acc < 1 { u8::MAX } else { acc };
+
+    // defmt::debug!("Yaw: {}, Set: {}", yaw, (speed, acc));
 
     set_speed(Some((speed, acc)))
 }

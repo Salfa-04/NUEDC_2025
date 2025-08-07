@@ -18,11 +18,11 @@ pub async fn init(cycle: u8) -> Pid<f32> {
     set_offset(get_yaw_data());
 
     // Todo: update setpoint to a transform
-    let mut pid = Pid::new(0., 1236.);
+    let mut pid = Pid::new(0., 1200.);
 
     {
-        pid.p(30.0, 1200.);
-        pid.i(0.01, 36.);
+        pid.p(42.0, 1200.);
+        pid.i(0.02, 360.);
         // pid.d(0.001, 12.);
     }
 

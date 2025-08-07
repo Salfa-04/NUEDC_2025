@@ -40,15 +40,36 @@ pub async fn main(p: (PD2, PC6)) {
     let mut laser = Laser::new(p.0);
 
     let mut finished = false;
-    let mut reverse = false;
     let mut count = 0u8;
     let mut keep_enable = false;
+    let mut focus = false;
 
+    // loop {
+    //     if focus == false {
+    //         yaw::reset(&mut yawc);
+    //         vision::reset(&mut visc);
+    //         laser.set(true);
+    //         focus = true;
+    //     }
+
+    //     yaw::update(&mut yawc, None).await;
+
+    //     t.next().await
+    // }
+
+    // #[allow(unreachable_code)]
     loop {
         if !finished {
             let measurement = V::get_vision();
 
             if measurement != (V::OFFSET_X, V::OFFSET_Y) || keep_enable {
+                if focus == false {
+                    yaw::reset(&mut yawc);
+                    vision::reset(&mut visc);
+
+                    focus = true;
+                }
+
                 let (ox, oy, err) = calculate(&mut visc, measurement);
 
                 // defmt::info!("{}: {}", err, (ox, oy));
@@ -57,20 +78,22 @@ pub async fn main(p: (PD2, PC6)) {
                 yaw::update(&mut yawc, Some(ox)).await;
 
                 if err.0 < 2.5 && err.1 < 3. {
+                    // if err.0 < 2.5 {
                     count += 1;
                 } else {
                     count = 0;
                 }
 
                 if count > 10 {
-                    laser.set(true);
-
                     if !laser_do {
                         // 未按下 PC6
+                        step::set_speed(Some((0, 0)));
+                        laser.set(true);
                         finished = true;
                     } else {
                         // 按下 PC6
                         count = 200;
+                        laser.set(true);
                         keep_enable = true;
                     }
                 }
@@ -79,14 +102,14 @@ pub async fn main(p: (PD2, PC6)) {
                 // servo::set_servo(Some(0.0)).await;
                 // step::set_speed(None);
             } else {
-                if reverse {
-                    yawc.setpoint -= 1.5;
-                } else {
-                    yawc.setpoint += 1.5;
-                }
+                focus = false;
 
-                if yawc.setpoint.abs() > 180. {
-                    reverse = !reverse;
+                yawc.setpoint += 2.0;
+
+                if yawc.setpoint.abs() > 360. {
+                    laser.set(true);
+                    step::set_speed(Some((0, 0)));
+                    finished = true;
                 }
 
                 yaw::update(&mut yawc, None).await;
@@ -97,12 +120,13 @@ pub async fn main(p: (PD2, PC6)) {
             // Disable stepper, servo and reset yaw data
             yaw::reset(&mut yawc);
             vision::reset(&mut visc);
-            step::set_speed(None);
 
             T::after_millis(2000).await;
 
+            step::set_speed(None);
             laser.set(false);
             servo::set_servo(None).await;
+            focus = false;
 
             t.reset();
         }
